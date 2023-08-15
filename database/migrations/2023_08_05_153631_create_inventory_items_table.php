@@ -29,6 +29,7 @@ class CreateInventoryItemsTable extends Migration
             $table->string('material_used')->length(10);
             $table->double('weight_received',20,2)->default(0)->nullable();
             $table->integer('is_excess')->length(1)->default(0);
+            $table->integer('is_deleted')->length(1)->default(0);
             $table->unsignedInteger('create_user')->length(11)->default(0);
             $table->unsignedInteger('update_user')->length(11)->default(0);
             $table->timestamps();
