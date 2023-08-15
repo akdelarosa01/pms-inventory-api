@@ -63,7 +63,7 @@ class InventoryController extends Controller
     public function store(Request $request)
     {
         $rules = $this->rules($request);
-        $this->validate($request, $rules[0], $rules[0]);
+        $this->validate($request, $rules[0], $rules[1]);
 
         try {
             DB::beginTransaction();
@@ -136,7 +136,7 @@ class InventoryController extends Controller
                 'width' => 'numeric',
                 'weight_received' => 'numeric',
                 'warehouse' => 'required',
-                'heat_no' => 'required',
+                //'heat_no' => 'required',
                 'length' => [
                     'numeric',
                     Rule::unique('inventory_items')->where(function ($query) use ($request) {
@@ -151,7 +151,7 @@ class InventoryController extends Controller
                 'quantity.numeric' => "Quantity field must be a number.",
                 'width.numeric' => "Width field must be a number.",
                 'weight_received.numeric' => "Weight Received field must be a number.",
-                'warehouse.required' => "Warehouse field is required.",
+                //'warehouse.required' => "Warehouse field is required.",
                 'heat_no.required' => "Heat Number field is required.",
                 'length.numeric' => "Length field must be a number.",
                 'length.unique' => "Length value has a same value with a same Heat Number.",

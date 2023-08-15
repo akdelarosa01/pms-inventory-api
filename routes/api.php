@@ -17,6 +17,7 @@ Route::post('logout', [LoginController::class, 'logout']);
 
 Route::get('/items-status', [ItemController::class, 'item_status']);
 Route::apiResource('/items', ItemController::class);
+Route::delete('/items-delete', [ItemController::class, 'destroy']);
 
 Route::apiResource('/inventories', InventoryController::class);
 Route::delete('/inventory-items-delete', [InventoryController::class, 'destroy']);

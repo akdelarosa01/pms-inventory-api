@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use App\Item;
 use Throwable;
 
@@ -20,11 +22,12 @@ class ItemController extends Controller
     {
         $items = Item::select(
             DB::raw("items.*"),
-            DB::raw("users.firstname as update_user"))
-        ->join('users','items.update_user','=','users.id')
-        ->where('items.is_deleted','=',0)
-        ->orderBy('items.updated_at', 'desc')
-        ->get();
+            DB::raw("users.firstname as update_user")
+        )
+            ->join('users', 'items.update_user', '=', 'users.id')
+            ->where('items.is_deleted', '=', 0)
+            ->orderBy('items.updated_at', 'desc')
+            ->get();
         return $items;
     }
 
@@ -32,16 +35,20 @@ class ItemController extends Controller
     {
         $items = Item::select(
             DB::raw("items.*"),
-            DB::raw("users.firstname as update_user"))
-        ->join('users','items.update_user','=','users.id')
-        ->where('items.is_deleted','=',0)
-        ->where('items.id',$id)
-        ->first();
+            DB::raw("users.firstname as update_user")
+        )
+            ->join('users', 'items.update_user', '=', 'users.id')
+            ->where('items.is_deleted', '=', 0)
+            ->where('items.id', $id)
+            ->first();
         return json_encode($items);
     }
 
     public function store(Request $request)
     {
+        $rules = $this->rules();
+        $this->validate($request, $rules[0], $rules[0]);
+
         try {
             DB::beginTransaction();
 
@@ -58,7 +65,7 @@ class ItemController extends Controller
                     $item->alloy = $request->alloy;
                     $item->size = $request->size;
                     $item->weight = $request->weight;
-                    
+
                     break;
                 case "CRUDE":
                     $item->item_category = $request->item_category;
@@ -94,9 +101,9 @@ class ItemController extends Controller
                     break;
             }
 
-            $item->create_user = Auth::user()->id;
-            $item->update_user = Auth::user()->id;
-            
+            $item->create_user = $request->user_id;
+            $item->update_user = $request->user_id;
+
             if ($item->save()) {
                 DB::commit();
                 return response([
@@ -112,6 +119,37 @@ class ItemController extends Controller
                 'status' => "error"
             ]);
         }
+    }
+
+    private function rules()
+    {
+        $rules = [
+            [
+                'item_category' => 'required',
+                'item_type' => 'required',
+                'item_desc' => 'required',
+                'item' => 'required',
+                'weight' => 'numeric',
+                'cut_weight' => 'numeric',
+                'cut_length' => 'numeric',
+                'cut_width' => 'numeric',
+                'item_code' => 'required|unique:items',
+            ],
+            [
+                'item_category.required' => "Item Ctegory field is required.",
+                'item_type.required' => "Input Type field is required.",
+                'item_desc.required' => "Item Description field is required.",
+                'item.required' => "Item field is required.",
+                'item_code.required' => "Item Code field is required.",
+                'item_code.unique' => "This Item code was already added.",
+                'weight.numeric' => "Weight field must be a number",
+                'cut_weight.numeric' => "Cut Weight field must be a number",
+                'cut_length.numeric' => "Cut Length field must be a number",
+                'cut_width.numeric' => "Cut Width field must be a number"
+            ]
+        ];
+
+        return $rules;
     }
 
     public function update(Request $request, $id)
@@ -167,22 +205,22 @@ class ItemController extends Controller
                     break;
             }
 
-            $item->update_user = Auth::user()->id;
+            $item->update_user = $request->user_id;
 
             if ($item->update()) {
                 DB::commit();
                 return response([
-                            'message' => "Item details was successfully saved.",
-                            'status' => "success",
-                            'data' => $this->items()
-                        ]);
+                    'message' => "Item details was successfully saved.",
+                    'status' => "success",
+                    'data' => $this->items()
+                ]);
             }
         } catch (Throwable $th) {
             DB::rollBack();
             return response([
-                        'message' => $th->getMessage(),
-                        'status' => "error"
-                    ]);
+                'message' => $th->getMessage(),
+                'status' => "error"
+            ]);
         }
 
         return response([
@@ -191,31 +229,31 @@ class ItemController extends Controller
         ]);
     }
 
-    public function destroy(Request $id)
+    public function destroy(Request $request)
     {
         try {
             DB::beginTransaction();
 
-            $delete = Item::whereIn('id',$id)->update([
+            $delete = Item::whereIn('id', $request->id)->update([
                 'is_deleted' => 1,
-                'update_user' => Auth::user()->id,
+                'update_user' => $request->user_id,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
 
             if ($delete) {
                 DB::commit();
                 return response([
-                            'message' => "Item details was successfully deleted.",
-                            'status' => "success",
-                            'data' => $this->items()
-                        ]);
+                    'message' => "Item details was successfully deleted.",
+                    'status' => "success",
+                    'data' => $this->items()
+                ]);
             }
         } catch (Throwable $th) {
             DB::rollBack();
             return response([
-                        'message' => $th->getMessage(),
-                        'status' => "error"
-                    ]);
+                'message' => $th->getMessage(),
+                'status' => "error"
+            ]);
         }
 
         return response([
@@ -226,9 +264,9 @@ class ItemController extends Controller
 
     public function item_status()
     {
-        $raw_materials = Item::where('item_category','RAW MATERIAL')->where('is_deleted', 0)->count();
-        $crude = Item::where('item_category','CRUDE')->where('is_deleted', 0)->count();
-        $finished_goods = Item::where('item_category','FINISHED GOODS')->where('is_deleted', 0)->count();
+        $raw_materials = Item::where('item_category', 'RAW MATERIAL')->where('is_deleted', 0)->count();
+        $crude = Item::where('item_category', 'CRUDE')->where('is_deleted', 0)->count();
+        $finished_goods = Item::where('item_category', 'FINISHED GOODS')->where('is_deleted', 0)->count();
 
         return response([
             'raw_materials' => $raw_materials,
