@@ -17,7 +17,7 @@ return [
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'https://pms-inventory-7ce300be31ef.herokuapp.com',
+        'https://pms-inventory-7ce300be31ef.herokuapp.com,https://pms-inventory-api-5de4f914c00d.herokuapp.com',
         Sanctum::currentApplicationUrlWithPort()
     ))),
    
