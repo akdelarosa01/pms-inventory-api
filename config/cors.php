@@ -29,7 +29,7 @@ return [
     /*
      * Matches the request origin. `[*]` allows all origins.
      */
-    'allowed_origins' => ['https://pms-inventory-7ce300be31ef.herokuapp.com'],
+    'allowed_origins' => ['https://pms-inventory-7ce300be31ef.herokuapp.com','https://pms-inventory-api-5de4f914c00d.herokuapp.com'],
 
     /*
      * Matches the request origin with, similar to `Request::is()`
