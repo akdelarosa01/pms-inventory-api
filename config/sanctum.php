@@ -17,7 +17,7 @@ return [
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'localhost,localhost:3000,localhost:4173,pms-inventory-api-5de4f914c00d.herokuapp.com,127.0.0.1,127.0.0.1:8000,::1',
+        'localhost,localhost:3000,localhost:4173,https://pms-inventory-7ce300be31ef.herokuapp.com,https://pms-inventory-api-5de4f914c00d.herokuapp.com,127.0.0.1,127.0.0.1:8000,::1',
         Sanctum::currentApplicationUrlWithPort()
     ))),
    
